@@ -1,5 +1,6 @@
 import router from './src/router.utils.js';
 import App from './src/app.vue';
+import webpackAssets from './static/webpack-assets.json';
 
 /**
  * 加载script脚本
@@ -35,45 +36,48 @@ const loadCss = path => new Promise(((resolve, reject) => {
   document.getElementsByTagName('head')[0].appendChild(link);
 }));
 
-const dashboardPath= './static/dashboardAsyncModule.js';
+console.log('webpackAssets: ')
+console.log(webpackAssets);
+
+// const dashboardPath = './static/dashboardAsyncModule.js';
+const dashboardName = webpackAssets.dashboardAsyncModule.js;
+const dashboardPath = `./static/${dashboardName}`;
+
 const aboutPath = './static/aboutAsyncModule.js';
 const cssModule = './static/css/dashboardAsyncModule.a470c.css';
 
-function asyncLoadModule (module, resolve) {
+function asyncLoadModule(module, resolve) {
   loadScript(module.path).then(() => {
 
-    if(module.cssPath) {
+    if (module.cssPath) {
       loadCss(cssModule).then(() => {
         console.log('load css success!')
       });
     }
-    
+
     console.log(window[module.name].default);
     resolve(window[module.name].default.module);
   });
 }
 
-const routers = [
-  {
-    path: '',
-    component: App,
-    children: [
-      {
-        path: 'dashboard',
-        component: (resolve) => asyncLoadModule({
-          name: 'dashboardAsyncModule',
-          path: dashboardPath,
-          cssPath: cssModule
-        }, resolve)
-      },
-      {
-        path: 'about',
-        component: (resolve) => asyncLoadModule({
-          name: 'aboutAsyncModule',
-          path: aboutPath
-        }, resolve)
-      }
-    ]
-  }
-];
+const routers = [{
+  path: '',
+  component: App,
+  children: [{
+      path: 'dashboard',
+      component: (resolve) => asyncLoadModule({
+        name: 'dashboardAsyncModule',
+        path: dashboardPath,
+        cssPath: cssModule
+      }, resolve)
+    },
+    {
+      path: 'about',
+      component: (resolve) => asyncLoadModule({
+        name: 'aboutAsyncModule',
+        path: aboutPath
+      }, resolve)
+    }
+  ]
+}];
 router.addRoutes(routers);
